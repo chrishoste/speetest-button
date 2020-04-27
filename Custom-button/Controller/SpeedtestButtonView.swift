@@ -112,10 +112,10 @@ class SpeedtestButtonView: UIViewController {
         labelViewWidth = labelView.widthAnchor.constraint(equalToConstant: 200)
         labelViewWidth.isActive = true
         setupLabels()
-        animateButton()
+        pulseAnimation()
     }
 
-    func setupLabels() {
+    private func setupLabels() {
         labelView.clipsToBounds = true
         labelView.addSubview(labelGO)
         labelGO.centerInSuperview()
@@ -130,8 +130,7 @@ class SpeedtestButtonView: UIViewController {
         labelConnecting.transform = CGAffineTransform(translationX: labelConnecting.frame.width, y: 0)
     }
 
-    func animateLabels(_ reset: Bool = false) {
-
+    private func animateLabels(_ reset: Bool = false) {
         if reset {
             labelViewWidth.constant = buttonView.bounds.size.rescale(0.5).width
             UIView.animate(withDuration: Double.durationSpinnerScale, delay: 0, animations: { [weak self] in
@@ -153,7 +152,7 @@ class SpeedtestButtonView: UIViewController {
         }
     }
 
-    func spinnerAnimation() {
+    private func spinnerAnimation() {
         animateLabels()
         buttonCircle.removeAnimation(forKey: "pulse")
         buttonBorderCircle.removeAnimation(forKey: "scaleOpacity")
@@ -190,7 +189,7 @@ class SpeedtestButtonView: UIViewController {
 
     }
 
-    func resetToPulse() {
+    private func resetToPulse() {
         animateLabels(true)
         buttonCircle.strokeColor = #colorLiteral(red: 0.1607843137, green: 0.7882352941, blue: 0.8078431373, alpha: 1)
 
@@ -218,10 +217,10 @@ class SpeedtestButtonView: UIViewController {
         buttonCircle.path = Utils.pathForCircleInRect(rect: buttonLayer.bounds, scaled: CGFloat.innerBorder)
         buttonCircle.add(scaleInnerAnimation, forKey: "path")
 
-        animateButton()
+        pulseAnimation()
     }
 
-    private func animateButton() {
+    private func pulseAnimation() {
 
         let pulseAnimation = CABasicAnimation(keyPath: "path")
         pulseAnimation.fromValue = buttonCircle.path
@@ -258,14 +257,14 @@ class SpeedtestButtonView: UIViewController {
         buttonBorderCircle.add(buttonBorderGroup, forKey: "scaleOpacity")
     }
 
-    func setupGesture() {
+    private func setupGesture() {
         let gesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         buttonView.addGestureRecognizer(gesture)
 
     }
 
     @objc
-    func handleTap(_ sender: UITapGestureRecognizer) {
+    private func handleTap(_ sender: UITapGestureRecognizer) {
 
         if toggle {
             resetToPulse()
