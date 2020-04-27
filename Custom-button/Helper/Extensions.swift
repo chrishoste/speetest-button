@@ -50,7 +50,7 @@ extension CGFloat {
 
     static let maskPath: CGFloat = innerBorder + 0.02
 
-    static let spinnerScale: CGFloat = 0.8
+    static let spinnerScale: CGFloat = 0.85
     static let spinnerInnerScale: CGFloat = spinnerScale - 0.02
 }
 
@@ -60,5 +60,5 @@ extension Double {
     static let delay: Double = durationPulse / 2
     static let delayGroup: Double = 3 + durationPulse
 
-    static let durationSpinnerScale: Double = 0.3
+    static let durationSpinnerScale: Double = 0.4
 }

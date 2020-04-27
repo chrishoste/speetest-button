@@ -13,12 +13,24 @@ class SpeedtestButtonView: UIViewController {
     private var toggle = false
 
     private let buttonView = UIView()
+    private let labelView = UIView()
+    private var labelViewWidth = NSLayoutConstraint()
 
-    private lazy var label: UILabel = {
+    private lazy var labelGO: UILabel = {
         let label = UILabel()
         label.text = "GO"
         label.font = .systemFont(ofSize: 32, weight: .heavy)
         label.textColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        label.textAlignment = .center
+        return label
+    }()
+
+    private lazy var labelConnecting: UILabel = {
+        let label = UILabel()
+        label.text = "Connecting..."
+        label.font = .systemFont(ofSize: 26, weight: .regular)
+        label.textColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        label.textAlignment = .center
         return label
     }()
 
@@ -94,13 +106,55 @@ class SpeedtestButtonView: UIViewController {
         buttonLayer.addSublayer(spinnerLayer)
         buttonLayer.addSublayer(buttonCircle)
 
-        buttonView.addSubview(label)
-        label.centerInSuperview()
-
+        buttonView.addSubview(labelView)
+        labelView.centerInSuperview()
+        labelView.constrainHeight(constant: 200)
+        labelViewWidth = labelView.widthAnchor.constraint(equalToConstant: 200)
+        labelViewWidth.isActive = true
+        setupLabels()
         animateButton()
     }
 
+    func setupLabels() {
+        labelView.clipsToBounds = true
+        labelView.addSubview(labelGO)
+        labelGO.centerInSuperview()
+        labelGO.anchor(top: nil, leading: labelView.leadingAnchor, bottom: nil, trailing: labelView.trailingAnchor)
+
+        labelView.addSubview(labelConnecting)
+        labelConnecting.centerInSuperview()
+        labelConnecting.anchor(top: nil, leading: labelView.leadingAnchor,
+                               bottom: nil, trailing: labelView.trailingAnchor)
+
+        labelView.layoutIfNeeded()
+        labelConnecting.transform = CGAffineTransform(translationX: labelConnecting.frame.width, y: 0)
+    }
+
+    func animateLabels(_ reset: Bool = false) {
+
+        if reset {
+            labelViewWidth.constant = buttonView.bounds.size.rescale(0.5).width
+            UIView.animate(withDuration: Double.durationSpinnerScale, delay: 0, animations: { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.labelConnecting.transform = CGAffineTransform(translationX: self.labelConnecting.frame.width, y: 0)
+                self.labelGO.transform = .identity
+            })
+        } else {
+            labelViewWidth.constant = buttonView.bounds.size.rescale(0.7).width
+            UIView.animate(withDuration: Double.durationSpinnerScale, delay: 0, animations: { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.labelConnecting.transform = .identity
+                self.labelGO.transform = CGAffineTransform(translationX: -self.labelGO.frame.width, y: 0)
+            })
+        }
+    }
+
     func spinnerAnimation() {
+        animateLabels()
         buttonCircle.removeAnimation(forKey: "pulse")
         buttonBorderCircle.removeAnimation(forKey: "scaleOpacity")
 
@@ -137,6 +191,7 @@ class SpeedtestButtonView: UIViewController {
     }
 
     func resetToPulse() {
+        animateLabels(true)
         buttonCircle.strokeColor = #colorLiteral(red: 0.1607843137, green: 0.7882352941, blue: 0.8078431373, alpha: 1)
 
         buttonCircle.removeAnimation(forKey: "path")
