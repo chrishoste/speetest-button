@@ -10,6 +10,8 @@ import UIKit
 
 class SpeedtestButtonView: UIViewController {
 
+    private var toggle = false
+
     private let buttonView = UIView()
 
     private lazy var label: UILabel = {
@@ -43,6 +45,29 @@ class SpeedtestButtonView: UIViewController {
 
     }()
 
+    private lazy var maskLayer: CAShapeLayer = {
+        let mask = CAShapeLayer()
+        mask.path = Utils.pathForCircleInRect(rect: buttonLayer.bounds, scaled: CGFloat.maskPath)
+        return mask
+    }()
+
+    private lazy var spinnerLayer: CAGradientLayer = {
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.5)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 0)
+        gradientLayer.type = .conic
+
+        gradientLayer.colors = [UIColor.clear, #colorLiteral(red: 0.1607843137, green: 0.7882352941, blue: 0.8078431373, alpha: 1).withAlphaComponent(0.5), #colorLiteral(red: 0.1607843137, green: 0.7882352941, blue: 0.8078431373, alpha: 1), #colorLiteral(red: 0.1607843137, green: 0.7882352941, blue: 0.8078431373, alpha: 1)].map {$0.cgColor}
+        gradientLayer.locations = [0, 0.1, 0.15, 1]
+        gradientLayer.frame = CGRect(centre: buttonLayer.bounds.centre,
+                                     size: buttonLayer.bounds.size)
+
+        gradientLayer.mask = maskLayer
+
+        gradientLayer.isHidden = true
+        return gradientLayer
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
@@ -57,6 +82,7 @@ class SpeedtestButtonView: UIViewController {
                           padding: .init(top: 0, left: 32, bottom: 0, right: 32))
 
         setupButton()
+        setupGesture()
     }
 
     private func setupButton() {
@@ -65,10 +91,77 @@ class SpeedtestButtonView: UIViewController {
         buttonView.layer.addSublayer(buttonLayer)
 
         buttonLayer.addSublayer(buttonBorderCircle)
+        buttonLayer.addSublayer(spinnerLayer)
         buttonLayer.addSublayer(buttonCircle)
 
         buttonView.addSubview(label)
         label.centerInSuperview()
+
+        animateButton()
+    }
+
+    func spinnerAnimation() {
+        buttonCircle.removeAnimation(forKey: "pulse")
+        buttonBorderCircle.removeAnimation(forKey: "scaleOpacity")
+
+        buttonCircle.strokeColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
+
+        spinnerLayer.isHidden = false
+
+        let spinnerAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
+        spinnerAnimation.fromValue = 0
+        spinnerAnimation.toValue = 2 * Double.pi
+        spinnerAnimation.duration = 1
+        spinnerAnimation.repeatCount = .infinity
+        spinnerLayer.add(spinnerAnimation, forKey: "spinner")
+
+        let scaleAnimation = CABasicAnimation(keyPath: "path")
+        scaleAnimation.fromValue = maskLayer.path
+        scaleAnimation.toValue = Utils.pathForCircleInRect(rect: buttonLayer.bounds, scaled: CGFloat.spinnerScale)
+        scaleAnimation.duration = Double.durationSpinnerScale
+        scaleAnimation.timingFunction = .init(name: .easeOut)
+
+        maskLayer.path = Utils.pathForCircleInRect(rect: buttonLayer.bounds, scaled: CGFloat.spinnerScale)
+        maskLayer.add(scaleAnimation, forKey: "mask")
+
+        let scaleInnerAnimation = CABasicAnimation(keyPath: "path")
+        scaleInnerAnimation.fromValue = buttonCircle.path
+        scaleInnerAnimation.toValue = Utils.pathForCircleInRect(rect: buttonLayer.bounds,
+                                                                scaled: CGFloat.spinnerInnerScale)
+        scaleInnerAnimation.duration = Double.durationSpinnerScale
+        scaleInnerAnimation.timingFunction = .init(name: .easeOut)
+
+        buttonCircle.path = Utils.pathForCircleInRect(rect: buttonLayer.bounds, scaled: CGFloat.spinnerInnerScale)
+        buttonCircle.add(scaleInnerAnimation, forKey: "path")
+
+    }
+
+    func resetToPulse() {
+        buttonCircle.strokeColor = #colorLiteral(red: 0.1607843137, green: 0.7882352941, blue: 0.8078431373, alpha: 1)
+
+        buttonCircle.removeAnimation(forKey: "path")
+        spinnerLayer.removeAnimation(forKey: "spinner")
+        maskLayer.removeAnimation(forKey: "mask")
+
+        let scaleAnimation = CABasicAnimation(keyPath: "path")
+        scaleAnimation.fromValue = maskLayer.path
+        scaleAnimation.toValue = Utils.pathForCircleInRect(rect: buttonLayer.bounds, scaled: CGFloat.innerBorder)
+        scaleAnimation.duration = Double.durationSpinnerScale
+        scaleAnimation.timingFunction = .init(name: .easeOut)
+
+        spinnerLayer.isHidden = true
+        maskLayer.path = Utils.pathForCircleInRect(rect: buttonLayer.bounds, scaled: CGFloat.maskPath)
+        maskLayer.add(scaleAnimation, forKey: "mask")
+
+        let scaleInnerAnimation = CABasicAnimation(keyPath: "path")
+        scaleInnerAnimation.fromValue = buttonCircle.path
+        scaleInnerAnimation.toValue = Utils.pathForCircleInRect(rect: buttonLayer.bounds,
+                                                               scaled: CGFloat.innerBorder)
+        scaleInnerAnimation.duration = Double.durationSpinnerScale
+        scaleInnerAnimation.timingFunction = .init(name: .easeOut)
+
+        buttonCircle.path = Utils.pathForCircleInRect(rect: buttonLayer.bounds, scaled: CGFloat.innerBorder)
+        buttonCircle.add(scaleInnerAnimation, forKey: "path")
 
         animateButton()
     }
@@ -108,5 +201,23 @@ class SpeedtestButtonView: UIViewController {
         buttonBorderGroup.beginTime = CACurrentMediaTime() + Double.delay
         buttonBorderGroup.repeatCount = .infinity
         buttonBorderCircle.add(buttonBorderGroup, forKey: "scaleOpacity")
+    }
+
+    func setupGesture() {
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        buttonView.addGestureRecognizer(gesture)
+
+    }
+
+    @objc
+    func handleTap(_ sender: UITapGestureRecognizer) {
+
+        if toggle {
+            resetToPulse()
+        } else {
+            spinnerAnimation()
+        }
+
+        toggle = !toggle
     }
 }

@@ -42,15 +42,23 @@ public struct Utils {
 }
 
 extension CGFloat {
-    static var innerBorder: CGFloat = 0.6
-    static var innerPulseTo: CGFloat = innerBorder - 0.01
-    static var outterBorder: CGFloat = innerBorder - 0.05
-    static var outterBorderScaleTo: CGFloat = outterBorder + 0.3
+    static let innerBorder: CGFloat = 0.6
+    static let innerPulseTo: CGFloat = innerBorder - 0.01
+
+    static let outterBorder: CGFloat = innerBorder - 0.05
+    static let outterBorderScaleTo: CGFloat = outterBorder + 0.3
+
+    static let maskPath: CGFloat = innerBorder + 0.02
+
+    static let spinnerScale: CGFloat = 0.8
+    static let spinnerInnerScale: CGFloat = spinnerScale - 0.02
 }
 
 extension Double {
-    static var durationPulse: Double = 0.2
-    static var durationscaleOpaciy: Double = 2
-    static var delay: Double = durationPulse / 2
-    static var delayGroup: Double = 3 + durationPulse
+    static let durationPulse: Double = 0.2
+    static let durationscaleOpaciy: Double = 2
+    static let delay: Double = durationPulse / 2
+    static let delayGroup: Double = 3 + durationPulse
+
+    static let durationSpinnerScale: Double = 0.3
 }
